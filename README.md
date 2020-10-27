@@ -2,7 +2,8 @@
 Bash bindings so I don't have to code in bash ever again.
 
 ## Coconut ⊃ Python
-[Coconut](http://coconut-lang.org/) is a Python superset (any valid Python code is a valid Coconut code) with various functional programming features like:
+[Coconut](http://coconut-lang.org/) is a Python superset (any valid Python code is a valid Coconut code), which compiles to Python.
+It adds various functional programming features like:
 * pretty lambdas
 ```python
 x -> x ** 2
@@ -30,3 +31,7 @@ or like this
 from itertools import count
 sh("ping 8.8.8.8") |> zip$(count()) |> cat
 ```
+
+## Installation
+Work in progress - I'm going to upload the package to PyPI soon. Since the source is valid even in Python,
+for now you can use it even without Coconut.
