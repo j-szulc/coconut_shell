@@ -6,6 +6,31 @@ DEVNULL = -3
 STDOUT = -2
 PIPE = -1
 
+## Custom modes
+
+# Equivalent to None in the subprocess library
+# e.g. if stderr is PASSTHROUGH then any errors from the slave process
+# will get dumped as if they were master's process errors
+# (i.e. slave.stderr -> master.stderr)
+PASSTHROUGH = -4
+
+# Implies PIPE in the underlying subprocess call
+# but disables this library from doing anything to that output
+# i.e. it can be read directly from Subprocess.process
+# e.g. output = Subprocess.process.stdout.read()
+# hence RAW
+RAW = -5
+
+customModes = {
+    PASSTHROUGH: None,
+    RAW: PIPE
+}
+
+def toSpArgument(mode):
+    if mode in customModes:
+        return customModes[mode]
+    else:
+        return mode
 
 def fork(function, *args, **kwargs):
     t = threading.Thread(target=function, args=args, kwargs=kwargs)
@@ -42,16 +67,16 @@ class Subprocess:
 
         if shell:
             self.process = subprocess.Popen(command,
-                                            stdin=stdin,
-                                            stdout=stdout,
-                                            stderr=stderr,
+                                            stdin=toSpArgument(stdin),
+                                            stdout=toSpArgument(stdout),
+                                            stderr=toSpArgument(stderr),
                                             shell=True
                                             )
         else:
             self.process = subprocess.Popen(shlex.split(command),
-                                            stdin=stdin,
-                                            stdout=stdout,
-                                            stderr=stderr,
+                                            stdin=toSpArgument(stdin),
+                                            stdout=toSpArgument(stdout),
+                                            stderr=toSpArgument(stderr),
                                             shell=False)
 
         #if inputSource is not None:
@@ -72,6 +97,9 @@ class Subprocess:
     def __call__(self,inputSource):
         self.__setupInput(inputSource)
         return self
+
+    def read(self):
+        return self.process.stdout.read().decode("utf-8")
 
     ## uncomment to make __repr__ dump stdout automatically
     ## e.g.
