@@ -33,5 +33,6 @@ sh("ping 8.8.8.8") |> zip$(count()) |> cat
 ```
 
 ## Installation
-Work in progress - I'm going to upload the package to PyPI soon. Since the source is valid even in Python,
-for now you can use it even without Coconut.
+Even though this library is meant to be used in the Coconut language, I will maintain this repository as a valid Python 3 code so that it can also be used this way directly in Python.
+
+I will upload the library to the PyPI soon.
