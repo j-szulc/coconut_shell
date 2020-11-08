@@ -1,6 +1,7 @@
 import subprocess
 import shlex
 import threading
+import collections
 
 DEVNULL = -3
 STDOUT = -2
@@ -26,11 +27,13 @@ customModes = {
     RAW: PIPE
 }
 
+
 def toSpArgument(mode):
     if mode in customModes:
         return customModes[mode]
     else:
         return mode
+
 
 def fork(function, *args, **kwargs):
     t = threading.Thread(target=function, args=args, kwargs=kwargs)
@@ -58,7 +61,7 @@ class Subprocess:
     def __setupInput(self, inputSource):
         self.stdinFeeder = fork(Subprocess.__inputFeeder, inputSource, self.process.stdin)
 
-    def __init__(self, command,  stdout=PIPE, stderr=None, shell=False):
+    def __init__(self, command, stdout=PIPE, stderr=None, shell=False):
 
         ## We don't know if there's input, because it may be provided by __call__ after the __init__
         ## Thus
@@ -79,7 +82,7 @@ class Subprocess:
                                             stderr=toSpArgument(stderr),
                                             shell=False)
 
-        #if inputSource is not None:
+        # if inputSource is not None:
         #    self.__setupInput(inputSource)
 
         if stdout is PIPE:
@@ -94,12 +97,15 @@ class Subprocess:
     def __iter__(self):
         return self
 
-    def __call__(self,inputSource):
+    def __call__(self, inputSource):
         self.__setupInput(inputSource)
         return self
 
     def read(self):
         return self.process.stdout.read().decode("utf-8")
+
+    def wait(self):
+        return self.process.wait()
 
     ## uncomment to make __repr__ dump stdout automatically
     ## e.g.
@@ -111,13 +117,42 @@ class Subprocess:
     #    fork(cat,self)
     #    return ""
 
+
 def sh(*args, **kwargs):
     return Subprocess(*args, **kwargs)
+
 
 def cat(iterable):
     for line in iterable:
         print(line)
 
-def void(iterable):
+
+def devnull(iterable):
     for line in iterable:
         pass
+
+
+def tee(iterable, n=2):
+    it = iter(iterable)
+    it_lock = threading.Lock()
+    deques = [collections.deque() for i in range(n)]
+
+    def gen(mydeque):
+        while True:
+            if not mydeque:  # when the local deque is empty
+                if it_lock.acquire(False):  # and nobody waits
+                    try:
+                        newval = next(it)  # fetch a new value and
+                        for d in deques:  # load it to all the deques
+                            d.append(newval)
+                    except StopIteration:
+                        return
+                    finally:
+                        it_lock.release()
+                else:  # if somebody already waits, wait for him
+                    with it_lock:
+                        pass
+            else:
+                yield mydeque.popleft()
+
+    return tuple(gen(d) for d in deques)
