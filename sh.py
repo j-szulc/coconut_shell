@@ -2,6 +2,7 @@ import subprocess
 import shlex
 import threading
 import collections
+import sys
 
 DEVNULL = -3
 STDOUT = -2
@@ -45,13 +46,16 @@ class Subprocess:
 
     @staticmethod
     def __inputFeeder(inputFrom, inputTo):
-        for line in inputFrom:
-            if inputTo.writable():
-                inputTo.write((line + "\n").encode("utf-8"))
-                inputTo.flush()
-            else:
-                break
-        inputTo.close()
+        try:
+            for line in inputFrom:
+                if inputTo.writable():
+                    inputTo.write((str(line) + "\n").encode("utf-8"))
+                    inputTo.flush()
+                else:
+                    break
+            inputTo.close()
+        except BrokenPipeError:
+            pass
 
     @staticmethod
     def __outputHandler(outputFrom):
@@ -101,6 +105,9 @@ class Subprocess:
         self.__setupInput(inputSource)
         return self
 
+    def __or__(self, other):
+        return other(self)
+
     def read(self):
         return self.process.stdout.read().decode("utf-8")
 
@@ -112,10 +119,10 @@ class Subprocess:
     ## sh("ls")
     ## will print the file list instead of
     ## <__main__.Subprocess object at 0x123456789abc>
-
-    # def __repr__(self):
-    #    fork(cat,self)
-    #    return ""
+    ##
+    ## def __repr__(self):
+    ##     return self.read()
+    ##
 
 
 def sh(*args, **kwargs):
@@ -131,28 +138,27 @@ def devnull(iterable):
     for line in iterable:
         pass
 
-
-def tee(iterable, n=2):
-    it = iter(iterable)
-    it_lock = threading.Lock()
-    deques = [collections.deque() for i in range(n)]
-
-    def gen(mydeque):
-        while True:
-            if not mydeque:  # when the local deque is empty
-                if it_lock.acquire(False):  # and nobody waits
-                    try:
-                        newval = next(it)  # fetch a new value and
-                        for d in deques:  # load it to all the deques
-                            d.append(newval)
-                    except StopIteration:
-                        return
-                    finally:
-                        it_lock.release()
-                else:  # if somebody already waits, wait for him
-                    with it_lock:
-                        pass
-            else:
-                yield mydeque.popleft()
-
-    return tuple(gen(d) for d in deques)
+# def tee(iterable, n=2):
+#     it = iter(iterable)
+#     it_lock = threading.Lock()
+#     deques = [collections.deque() for i in range(n)]
+#
+#     def gen(mydeque):
+#         while True:
+#             if not mydeque:  # when the local deque is empty
+#                 if it_lock.acquire(False):  # and nobody waits
+#                     try:
+#                         newval = next(it)  # fetch a new value and
+#                         for d in deques:  # load it to all the deques
+#                             d.append(newval)
+#                     except StopIteration:
+#                         return
+#                     finally:
+#                         it_lock.release()
+#                 else:  # if somebody already waits, wait for him
+#                     with it_lock:
+#                         pass
+#             else:
+#                 yield mydeque.popleft()
+#
+#     return tuple(gen(d) for d in deques)
