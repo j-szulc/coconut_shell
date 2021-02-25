@@ -38,7 +38,7 @@ def toSpArgument(mode):
 def fork(function,*args, **kwargs):
     daemon = False
     if "daemon" in kwargs:
-        daemon = kwargs["daemon"]
+        daemon = kwargs.pop("daemon")
     t = threading.Thread(target=function, args=args, kwargs=kwargs,daemon=daemon)
     t.start()
     return t
