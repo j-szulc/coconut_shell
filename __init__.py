@@ -61,7 +61,7 @@ class Subprocess:
     def __setupInput(self, inputSource):
         self.stdinFeeder = fork(Subprocess.__inputFeeder, inputSource, self.process.stdin)
 
-    def __init__(self, command, stdout=PIPE, stderr=None, shell=False):
+    def __init__(self, command, stdout=PIPE, stderr=PASSTHROUGH, shell=False):
 
         ## We don't know if there's input, because it may be provided by __call__ after the __init__
         ## Thus
