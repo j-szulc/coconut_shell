@@ -35,8 +35,11 @@ def toSpArgument(mode):
         return mode
 
 
-def fork(function, *args, **kwargs):
-    t = threading.Thread(target=function, args=args, kwargs=kwargs)
+def fork(function,*args, **kwargs):
+    daemon = False
+    if "daemon" in kwargs:
+        daemon = kwargs["daemon"]
+    t = threading.Thread(target=function, args=args, kwargs=kwargs,daemon=daemon)
     t.start()
     return t
 
