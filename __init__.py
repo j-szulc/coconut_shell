@@ -104,6 +104,9 @@ class Subprocess:
         self.__setupInput(inputSource)
         return self
 
+    def __or__(self, other):
+        return other(self)
+
     def read(self):
         return self.process.stdout.read().decode("utf-8")
 
