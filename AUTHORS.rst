@@ -2,4 +2,4 @@
 Contributors
 ============
 
-* Jakub Szulc <58491724+j-szulc@users.noreply.github.com>
+* Jakub Szulc <http://github.com/j-szulc>
