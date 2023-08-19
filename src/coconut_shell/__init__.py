@@ -14,3 +14,13 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
+
+from . import coco_app
+from . import _subprocess
+from . import apps
+
+def sh(*args, **kwargs):
+    return _subprocess.Subprocess(*args, **kwargs)
+
+echo = _subprocess.echo
+
