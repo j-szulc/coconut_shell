@@ -17,10 +17,14 @@ finally:
 
 from . import coco_app
 from . import _subprocess
-from . import apps
+from . import io_tools
 
 def sh(*args, **kwargs):
     return _subprocess.Subprocess(*args, **kwargs)
 
-echo = _subprocess.echo
+class Echo(coco_app.CocoAppI):
 
+    def _set_input(self, src):
+       io_tools.print_fileobj(src)
+
+echo = Echo()

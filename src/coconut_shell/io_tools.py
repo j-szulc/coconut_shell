@@ -1,26 +1,7 @@
 import sys
 
 from .constants import *
-import logging
 import os
-
-def setup_logger(pipe_fd, level, name=None):
-    level = {
-        LOGGER_DEBUG: logging.DEBUG,
-        LOGGER_INFO: logging.INFO,
-        LOGGER_WARNING: logging.WARNING,
-        LOGGER_ERROR: logging.ERROR,
-        LOGGER_CRITICAL: logging.CRITICAL,
-    }[level]
-    logger = logging.getLogger()
-    logger.setLevel(level)
-    handler = logging.StreamHandler(os.fdopen(pipe_fd, 'w'))
-    log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(log_formatter)
-    if name:
-        handler.set_name(name)
-    logger.addHandler(handler)
-    return logger
 
 def read_fileobj(fileobj, close=True, block_size=BLOCK_SIZE):
     len_read = 1
@@ -70,4 +51,4 @@ def print_fileobj(fileobj, close=True):
             buffer = b''
         except UnicodeDecodeError:
             pass
-    print(f"Read {read_bytes} bytes from fileobj", file=sys.stderr)
+    # print(f"Read {read_bytes} bytes from fileobj", file=sys.stderr)
