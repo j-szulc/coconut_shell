@@ -1,3 +1,5 @@
+import sys
+
 from .constants import *
 import logging
 import os
@@ -20,28 +22,28 @@ def setup_logger(pipe_fd, level, name=None):
     logger.addHandler(handler)
     return logger
 
-def fd_read(fd, close=True, block_size=BLOCK_SIZE):
+def read_fileobj(fileobj, close=True, block_size=BLOCK_SIZE):
     len_read = 1
     while len_read > 0:
-        data = os.read(fd, block_size)
+        data = fileobj.read(block_size)
         len_read = len(data)
         if len_read > 0:
             yield data
     if close:
-        os.close(fd)
+        fileobj.close()
 
-def fd_write(fd, iterable_data, close=True):
+def write_fileobj(fileobj, iterable_data, close=True):
     for data in iterable_data:
-        os.write(fd, data)
+        fileobj.write(data)
     if close:
-        os.close(fd)
+        fileobj.close()
 
-def connect_pipes(left_fd, right_fd, close_left=True, close_right=True, block_size=BLOCK_SIZE):
-    fd_write(right_fd, fd_read(left_fd, close=close_left, block_size=block_size), close=close_right)
+def connect_fileobj(left_fileobj, right_fileobj, close_left=True, close_right=True, block_size=BLOCK_SIZE):
+    write_fileobj(right_fileobj, read_fileobj(left_fileobj, close=close_left, block_size=block_size), close=close_right)
 
-def fd_read_split(fd, separator="\n", close=True):
+def read_fileobj_split(fileobj, separator="\n", close=True):
     buffer = None
-    for data in fd_read(fd, close=close):
+    for data in read_fileobj(fileobj, close=close):
         index = data.find(separator)
         while index >= 0:
             if buffer is None:
@@ -56,33 +58,16 @@ def fd_read_split(fd, separator="\n", close=True):
         else:
             buffer += data
 
-def fd_print(fd, close=True):
+def print_fileobj(fileobj, close=True):
     buffer = b''
-    for data in fd_read(fd, close=close, block_size=1):
+    read_bytes = 0
+    for data in read_fileobj(fileobj, close=close, block_size=1):
         buffer += data
+        read_bytes += len(data)
         try:
             print(data.decode(), end='')
+            sys.stdout.flush()
             buffer = b''
         except UnicodeDecodeError:
             pass
-
-class OsNonblockFdopen:
-
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        self.obj = None
-
-    def __get_obj(self):
-        if self.obj is None:
-            self.obj = os.fdopen(*self.args, **self.kwargs)
-        return self.obj
-
-    def __enter__(self):
-        return self.__get_obj().__enter__()
-
-    def __exit__(self):
-        return self.__get_obj().__exit__()
-
-    def fileno(self):
-        return self.__get_obj().fileno()
+    print(f"Read {read_bytes} bytes from fileobj", file=sys.stderr)

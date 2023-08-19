@@ -13,6 +13,6 @@ import psutil
 # p = sh("seq 1000")
 # os.close(p.st)
 
-x = sh("sh -c 'echo hello world >&2'",shell=True,stderr=PIPE)
-fd_print(x.stderr_r)
-
+x = sh(">&2 echo error",shell=True,stderr=PIPE)
+print_fileobj(x.sp.stdout)
+print_fileobj(x.sp.stderr)

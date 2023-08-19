@@ -1,17 +1,10 @@
 import sys
 
-LOGGER_DEBUG = -8
-LOGGER_INFO = -7
-LOGGER_WARNING = -6
-LOGGER_ERROR = -5
-LOGGER_CRITICAL = -4
-LOGGERS = (LOGGER_DEBUG, LOGGER_INFO, LOGGER_WARNING, LOGGER_ERROR, LOGGER_CRITICAL)
-
 PIPE = -1
 
-STDIN = sys.stdin
-STDOUT = sys.stdout
-STDERR = sys.stderr
+STDIN = sys.stdin.fileno()
+STDOUT = sys.stdout.fileno()
+STDERR = sys.stderr.fileno()
 DEVNULL = -3
 
 BLOCK_SIZE = 4096
