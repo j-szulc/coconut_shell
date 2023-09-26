@@ -22,7 +22,7 @@ def write_fileobj(fileobj, iterable_data, close=True):
 def connect_fileobj(left_fileobj, right_fileobj, close_left=True, close_right=True, block_size=BLOCK_SIZE):
     write_fileobj(right_fileobj, read_fileobj(left_fileobj, close=close_left, block_size=block_size), close=close_right)
 
-def read_fileobj_split(fileobj, separator="\n", close=True):
+def read_fileobj_split(fileobj, separator, close=True):
     buffer = None
     for data in read_fileobj(fileobj, close=close):
         index = data.find(separator)

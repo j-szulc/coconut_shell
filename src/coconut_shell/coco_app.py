@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from . import io_tools
 
@@ -44,7 +45,33 @@ class CocoAppIO(CocoAppI, CocoAppO):
 def lines(src):
     if isinstance(src, str) or isinstance(src, bytes):
         return src.splitlines()
-    return io_tools.read_fileobj_split(src, separator="\n", close=True)
+    else:
+        try:
+            try:
+                yield from io_tools.read_fileobj_split(src, separator="\n", close=True)
+            except TypeError:
+                yield from io_tools.read_fileobj_split(src, separator=b"\n", close=True)
+        except AttributeError:
+            yield from src
+
+class CocoIterable(CocoAppO):
+
+    def __init__(self, obj):
+        super().__init__()
+        self.obj = obj
+
+    def _get_output(self):
+        return self.obj
+
+    def __iter__(self):
+        return iter(self.obj)
+
+    def __repr__(self):
+        return repr(self.obj)
+
+    def __getitem__(self, item):
+        return self.obj[item]
+
 
 class PythonFunction(CocoAppIO):
 
@@ -55,12 +82,18 @@ class PythonFunction(CocoAppIO):
     def _set_input(self, src):
         self.src = src
 
-    def _get_output(self):
+    def __get_output(self):
         for item in lines(self.src):
             yield self.func(item)
+
+    def _get_output(self):
+        return CocoIterable(self.__get_output())
 
 def cocofy(x):
     if isinstance(x, CocoAppI) or isinstance(x, CocoAppO):
         return x
-    else:
+    elif callable(x):
         return PythonFunction(x)
+    else:
+        return x
+
