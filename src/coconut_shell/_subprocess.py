@@ -23,12 +23,9 @@ class Subprocess(CocoAppIO):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
-        self.was_stdout_get = False
-        self.was_input_set = False
 
     def _get_output(self):
         assert self.stdout == PIPE
-        assert not self.was_stdout_get
         self.was_stdout_get = True
         return self.sp.stdout
 

@@ -12,9 +12,15 @@ class CocoAppI(ABC):
         """Set the input source."""
         pass
 
+    def set_input(self, src):
+        """Set the input source."""
+        assert not self.was_input_set
+        self._set_input(src)
+        self.was_input_set = True
+
     def __call__(self, src):
         """Allows the instance to be called like a function."""
-        self._set_input(src)
+        self.set_input(src)
         return self
 
 class CocoAppO(ABC):
@@ -27,14 +33,16 @@ class CocoAppO(ABC):
         """Retrieve the output."""
         pass
 
+    def get_output(self):
+        """Retrieve the output."""
+        assert not self.was_output_get
+        result = self._get_output()
+        self.was_output_get = True
+        return result
+
     def __or__(self, other):
         """Allows the instance to be piped into another using the | operator."""
-        assert not self.was_output_get
-        self.was_output_get = True
-        if isinstance(other, CocoAppI):
-            return cocofy(other)(self._get_output())
-        else:
-            raise ValueError("The object being piped to is not a valid CocoAppI.")
+        return cocofy(other)(self.get_output())
 
 class CocoAppIO(CocoAppI, CocoAppO):
 
@@ -89,11 +97,13 @@ class PythonFunction(CocoAppIO):
     def _get_output(self):
         return CocoIterable(self.__get_output())
 
+
+class InvalidCocoAppError(Exception):
+    pass
+
 def cocofy(x):
     if isinstance(x, CocoAppI) or isinstance(x, CocoAppO):
         return x
-    elif callable(x):
+    if callable(x):
         return PythonFunction(x)
-    else:
-        return x
-
+    raise InvalidCocoAppError(f"Cannot cocofy {x} of type {type(x)}")
