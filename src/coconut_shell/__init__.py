@@ -30,8 +30,8 @@ class Cat(coco_app.CocoAppI):
 
     def _set_input(self, *srcs):
        for src in srcs:
-              for line in lines(src):
-                print(line)
+          for line in lines(src):
+            print(line)
 
     def __repr__(self):
         return None
@@ -65,7 +65,6 @@ class BetterPath(pathlib.Path):
         return iter(self.name + self.suffix)
 
 BetterPath._flavour = pathlib._windows_flavour if os.name == "nt" else pathlib._posix_flavour
-
 
 def grep(pattern, invert=False):
     return Grep(pattern, invert=invert)

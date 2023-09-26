@@ -26,12 +26,9 @@ class Subprocess(CocoAppIO):
 
     def _get_output(self):
         assert self.stdout == PIPE
-        self.was_stdout_get = True
         return self.sp.stdout
 
     def _set_input(self, src):
         assert self.stdin is not None
-        assert not self.was_input_set
-        self.was_input_set = True
-        self.set_input_thread = threading.Thread(target=connect_fileobj, args=(src, self.sp.stdin))
+        self.set_input_thread = threading.Thread(target=connect_fileobj, args=(src, self.sp.stdin), daemon=True)
         self.set_input_thread.start()
