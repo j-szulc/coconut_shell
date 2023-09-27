@@ -32,20 +32,11 @@ class Cat(coco_app.CocoAppI):
 
     def _set_input(self, *srcs):
         for src in srcs:
-            for line in lines(src):
-                try:
-                    line = line.decode()
-                except AttributeError:
-                    pass
-                print(line)
+            io_tools.print_fileobj(src, close=True)
 
 
 def cat():
     return Cat()
-
-
-lines = coco_app.lines
-
 
 class Grep(coco_app.CocoAppIO):
 

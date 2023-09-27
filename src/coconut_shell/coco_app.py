@@ -56,7 +56,8 @@ def lines(src):
     except AttributeError:
         pass
     try:
-        yield from io_tools.read_fileobj_split(src, separator=b"\n", close=True, force_encode=True)
+        for line in io_tools.read_fileobj_split(src, separator=b"\n", close=True, force_encode=True):
+            yield line.decode()
         return
     except AttributeError:
         pass
