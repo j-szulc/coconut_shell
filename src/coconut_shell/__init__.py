@@ -20,8 +20,10 @@ from . import _subprocess
 from . import io_tools
 import os, pathlib
 
+
 def sh(*args, **kwargs):
     return _subprocess.Subprocess(*args, **kwargs)
+
 
 class Cat(coco_app.CocoAppI):
 
@@ -29,16 +31,21 @@ class Cat(coco_app.CocoAppI):
         super().__init__()
 
     def _set_input(self, *srcs):
-       for src in srcs:
-          for line in lines(src):
-            print(line)
+        for src in srcs:
+            for line in lines(src):
+                try:
+                    line = line.decode()
+                except AttributeError:
+                    pass
+                print(line)
 
-    def __repr__(self):
-        return None
 
-cat = Cat()
+def cat():
+    return Cat()
+
 
 lines = coco_app.lines
+
 
 class Grep(coco_app.CocoAppIO):
 
@@ -59,17 +66,19 @@ class Grep(coco_app.CocoAppIO):
         return coco_app.CocoIterable(self.__get_output())
 
 
+def grep(pattern, invert=False):
+    return Grep(pattern, invert=invert)
+
+
 class BetterPath(pathlib.Path):
 
     def __iter__(self):
         return iter(self.name + self.suffix)
 
+
 BetterPath._flavour = pathlib._windows_flavour if os.name == "nt" else pathlib._posix_flavour
 
-def grep(pattern, invert=False):
-    return Grep(pattern, invert=invert)
 
 def ls(path="."):
     path = os.path.expanduser(path)
     return coco_app.CocoIterable([BetterPath(path) / f for f in os.listdir(path)])
-

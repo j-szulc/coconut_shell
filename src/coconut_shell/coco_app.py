@@ -51,16 +51,21 @@ class CocoAppIO(CocoAppI, CocoAppO):
         CocoAppO.__init__(self)
 
 def lines(src):
-    if isinstance(src, str) or isinstance(src, bytes):
+    try:
         return src.splitlines()
-    else:
-        try:
-            try:
-                yield from io_tools.read_fileobj_split(src, separator="\n", close=True)
-            except TypeError:
-                yield from io_tools.read_fileobj_split(src, separator=b"\n", close=True)
-        except AttributeError:
-            yield from src
+    except AttributeError:
+        pass
+    try:
+        yield from io_tools.read_fileobj_split(src, separator=b"\n", close=True, force_encode=True)
+        return
+    except AttributeError:
+        pass
+    try:
+        yield from src
+        return
+    except TypeError:
+        pass
+    raise TypeError(f"Cannot iterate over lines of {src} of type {type(src)}")
 
 class CocoIterable(CocoAppO):
 

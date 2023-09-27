@@ -2,9 +2,9 @@ import sys
 
 PIPE = -1
 
-STDIN = sys.stdin.fileno()
-STDOUT = sys.stdout.fileno()
-STDERR = sys.stderr.fileno()
+STDIN = 0
+STDOUT = 1
+STDERR = 2
 DEVNULL = -3
 
 BLOCK_SIZE = 4096

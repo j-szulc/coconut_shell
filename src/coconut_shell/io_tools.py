@@ -1,12 +1,21 @@
+import itertools
 import sys
 
 from .constants import *
 import os
 
-def read_fileobj(fileobj, close=True, block_size=BLOCK_SIZE):
+def read_fileobj(fileobj, close=True, block_size=BLOCK_SIZE, force_encode=False, force_decode=False):
+    assert not (force_encode and force_decode), "Cannot force both encoding and decoding!"
     len_read = 1
     while len_read > 0:
         data = fileobj.read(block_size)
+        try:
+            if force_encode:
+                data = data.encode()
+            elif force_decode:
+                data = data.decode()
+        except (AttributeError, UnicodeDecodeError):
+            pass
         len_read = len(data)
         if len_read > 0:
             yield data
@@ -22,9 +31,9 @@ def write_fileobj(fileobj, iterable_data, close=True):
 def connect_fileobj(left_fileobj, right_fileobj, close_left=True, close_right=True, block_size=BLOCK_SIZE):
     write_fileobj(right_fileobj, read_fileobj(left_fileobj, close=close_left, block_size=block_size), close=close_right)
 
-def read_fileobj_split(fileobj, separator, close=True):
+def read_fileobj_split(fileobj, separator, close=True, force_encode=False, force_decode=False):
     buffer = None
-    for data in read_fileobj(fileobj, close=close):
+    for data in read_fileobj(fileobj, close=close, force_encode=force_encode, force_decode=force_decode):
         index = data.find(separator)
         while index >= 0:
             if buffer is None:
@@ -38,6 +47,8 @@ def read_fileobj_split(fileobj, separator, close=True):
             buffer = data
         else:
             buffer += data
+    if buffer is not None:
+        yield buffer
 
 def print_fileobj(fileobj, close=True):
     buffer = b''
